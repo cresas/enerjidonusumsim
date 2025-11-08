@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <title>Enerji Dönüşüm Zinciri - Şampiyonluk Simülasyonu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* CSS Değişkenleri */
+    :root {
+      /* Dark Theme Variables */
+      --bg: #0b1220;
+      --bg-card: #111827;
+      --bg-card-hover: #1f2937;
+      --bg-secondary: #1e293b;
+      --text: #e5e7eb;
+      --text-secondary: #9ca3af;
+      --text-muted: #6b7280;
+      --border: #374151;
+      --border-light: #4b5563;
+      --shadow: rgba(0, 0, 0, 0.3);
+      --shadow-light: rgba(0, 0, 0, 0.1);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --success-light: #34d399;
+      --error: #ef4444;
+      --error-light: #f87171;
+      --warning: #f59e0b;
+      --warning-light: #fbbf24;
+      
+      /* Energy Type Colors */
+      --chemical: #8b5cf6;
+      --chemical-light: #a78bfa;
+      --electrical: #eab308;
+      --electrical-light: #facc15;
+      --mechanical: #06b6d4;
+      --mechanical-light: #22d3ee;
+      --heat: #f97316; /* Turuncu (Isı Enerjisi) - Mevcut haliyle korundu */
+      --heat-light: #fb923c; /* Açık Turuncu */
+      --light: #e51616;
+      --light-light: #e14c6e;
+      --sound: #84cc16;
+      --sound-light: #a3e635;
+      --nuclear: #ef4444; /* KIRMIZI (Nükleer Enerji) - Değiştirildi */
+      --nuclear-light: #f87171; /* Açık Kırmızı */
+    }
+
+    [data-theme="light"] {
+      /* Light Theme Variables */
+      --bg: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f1f5f9;
+      --bg-secondary: #f1f5f9;
+      --text: #1f2937;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --border: #e5e7eb;
+      --border-light: #d1d5db;
+      --shadow: rgba(0, 0, 0, 0.1);
+      --shadow-light: rgba(0, 0, 0, 0.05);
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #059669;
+      --success-light: #10b981;
+      --error: #dc2626;
+      --error-light: #ef4444;
+      --warning: #d97706;
+      --warning-light: #f59e0b;
+    }
+
+    /* Genel Stil */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      line-height: 1.6;
+    }
+
+    /* Ana Container - Ortalandı ve max-width eklendi */
+    .dashboard-container {
+      display: flex;
+      flex-direction: column;
+      max-width: 1300px;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding: 1.5rem 2rem;
+      background: var(--bg-card);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px var(--shadow);
+      border: 1px solid var(--border);
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .title h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent), var(--success));
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title h2 {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* Tema Değiştirme Butonu */
+    .theme-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 3rem;
+      height: 3rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .theme-toggle:hover {
+      background: var(--bg-card-hover);
+      transform: translateY(-1px);
+    }
+
+    .theme-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    [data-theme="dark"] .theme-icon {
+      color: #fbbf24; /* Güneş ışığı rengi */
+    }
+
+    [data-theme="light"] .theme-icon {
+      color: #6b7280; /* Ay ışığı rengi */
+    }
+
+    /* Kılavuz Butonu - Header'da */
+    .header-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .guide-button-header {
+      padding: 0.75rem 1.5rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .guide-button-header:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Ana Grid Layout */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr 1fr;
+      gap: 2rem;
+      flex: 1;
+      align-items: start;
+    }
+
+    /* Kart Stilleri */
+    .card {
+      background: var(--bg-card);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px var(--shadow);
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      min-height: 0; /* Grid item için önemli */
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 48px var(--shadow);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Enerji Tipleri Grid */
+    .energy-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .energy-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+      background: var(--bg-secondary);
+      border: 2px solid var(--border);
+      border-radius: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      min-height: 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .energy-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px var(--shadow-light);
+    }
+
+    .energy-button.selected {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .energy-icon {
+      width: 2rem;
+      height: 2rem;
+      margin-bottom: 0.5rem;
+      color: currentColor;
+    }
+
+    .energy-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text);
+    }
+
+    /* Enerji Tipi Renkleri */
+    .chemical { background: linear-gradient(135deg, var(--chemical), var(--chemical-light)); color: white; }
+    .electrical { background: linear-gradient(135deg, var(--electrical), var(--electrical-light)); color: var(--text); }
+    .mechanical { background: linear-gradient(135deg, var(--mechanical), var(--mechanical-light)); color: white; }
+    .heat { background: linear-gradient(135deg, var(--heat), var(--heat-light)); color: white; }
+    .light { background: linear-gradient(135deg, var(--light), var(--light-light)); color: var(--text); }
+    .sound { background: linear-gradient(135deg, var(--sound), var(--sound-light)); color: white; }
+    /* DEĞİŞTİRİLDİ: Nükleer için kırmızı tonları kullanıldı */
+    .nuclear { background: linear-gradient(135deg, var(--nuclear), var(--nuclear-light)); color: white; }
+
+    /* Zincir Alanı */
+    .chain-area {
+      background: var(--bg-secondary);
+      border: 2px dashed var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .chain-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      min-width: 80px;
+      position: relative;
+    }
+
+    .chain-item.correct {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .chain-item.wrong {
+      border-color: var(--error);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .chain-icon {
+      width: 1.5rem;
+      height: 1.5rem;
+      margin-bottom: 0.25rem;
+      color: currentColor;
+    }
+
+    .chain-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .chain-score {
+      font-size: 0.7rem;
+      font-weight: 500;
+      margin-top: 0.25rem;
+    }
+
+    .correct .chain-score { color: var(--success); }
+    .wrong .chain-score { color: var(--error); }
+
+    .chain-arrow {
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      margin: 0 0.5rem;
+    }
+
+    .chain-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      width: 100%;
+    }
+
+    /* Puan Bölümü */
+    .score-section {
+      margin-bottom: 1rem;
+    }
+
+    .score-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border-radius: 0.75rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .score {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .reset-button {
+      padding: 0.5rem 1rem;
+      background: var(--error);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .reset-button:hover {
+      background: var(--error-light);
+      transform: translateY(-1px);
+    }
+
+    /* Tebrik Paneli */
+    .congratulations {
+      background: linear-gradient(135deg, var(--success), var(--success-light));
+      color: white;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      text-align: center;
+      font-weight: 700;
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      animation: bounce 0.6s ease;
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-10px); }
+      60% { transform: translateY(-5px); }
+    }
+
+    /* Gerekçe Listesi */
+    .reasons-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: 400px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .reason-item {
+      padding: 1rem;
+      border-radius: 0.75rem;
+      border-left: 4px solid;
+      background: var(--bg-secondary);
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .reason-item.correct {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+    }
+
+    .reason-item.wrong {
+      border-color: var(--error);
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+      background: var(--bg-card);
+      color: var(--text);
+      padding: 0.75rem 1rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 8px 32px var(--shadow);
+      border: 1px solid var(--border);
+      font-size: 0.9rem;
+      max-width: 250px;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.2s ease;
+      pointer-events: none;
+    }
+
+    .tooltip.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .tooltip::after {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-bottom: 8px solid var(--bg-card);
+    }
+
+    /* Konfeti */
+    .confetti {
+      position: fixed;
+      top: -10px;
+      pointer-events: none;
+      z-index: 9999;
+      animation: confettiFall 3s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { 
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% { 
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    /* Kılavuz Butonu */
+    .guide-button {
+      display: none; /* Header'daki versiyonu kullanıyoruz */
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--bg-card);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90vw;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 64px var(--shadow);
+      border: 1px solid var(--border);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      color: var(--text);
+      text-align: center;
+    }
+
+    .modal-content ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .modal-content li {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .modal-content li:last-child {
+      border-bottom: none;
+    }
+
+    .modal-close {
+      width: 100%;
+      padding: 0.75rem;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      font-weight: 500;
+      margin-top: 1.5rem;
+      transition: background 0.2s ease;
+    }
+
+    .modal-close:hover {
+      background: var(--accent-hover);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      
+      .energy-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      
+      .header {
+        padding: 1rem 1.5rem;
+      }
+      
+      .title h1 {
+        font-size: 1.75rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-container {
+        padding: 0.5rem;
+      }
+      
+      .header {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
+        text-align: center;
+      }
+      
+      .title h1 {
+        font-size: 1.5rem;
+      }
+      
+      .title h2 {
+        font-size: 0.9rem;
+      }
+      
+      .energy-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+      
+      .energy-button {
+        min-height: 80px;
+        padding: 1rem 0.5rem;
+      }
+      
+      .energy-icon {
+        width: 1.5rem;
+        height: 1.5rem;
+      }
+      
+      .card {
+        padding: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .energy-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .title h1 {
+        font-size: 1.25rem;
+      }
+      
+      .title h2 {
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Scrollbar Styling */
+    .reasons-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .reasons-list::-webkit-scrollbar-track {
+      background: var(--bg-secondary);
+      border-radius: 3px;
+    }
+
+    .reasons-list::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 3px;
+    }
+
+    .reasons-list::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <header class="header">
+      <div class="title">
+        <h1>Enerji Dönüşüm Zinciri</h1>
+        <h2>Şampiyonluk Simülasyonu</h2>
+      </div>
+      <div class="header-buttons">
+        <button class="guide-button-header" onclick="openGuide()">
+          <svg width="1.25rem" height="1.25rem" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Kılavuz
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <svg class="theme-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <div class="card">
+        <h3 class="card-title">
+          <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+          </svg>
+          Enerji Biçimleri
+        </h3>
+        <div class="energy-grid">
+          <button class="energy-button chemical" onclick="selectEnergy('Kimyasal')" 
+            onmouseenter="showTooltip(this, 'Pil, akü, besinlerde depolanan enerji. Kimyasal bağlardan elde edilir.')"
+            onmouseleave="hideTooltip()">
+            <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+            </svg>
+            <div class="energy-name">Kimyasal Enerji</div>
+          </button>
+          
+          <button class="energy-button electrical" onclick="selectEnergy('Elektrik')"
+            onmouseenter="showTooltip(this, 'Elektronların hareketiyle ortaya çıkan enerji. Ev ve sanayide yaygın.')"
+            onmouseleave="hideTooltip()">
+            <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <div class="energy-name">Elektrik Enerjisi</div>
+          </button>
+          
+          <button class="energy-button mechanical" onclick="selectEnergy('Mekanik')"
+            onmouseenter="showTooltip(this, 'Hareket eden veya konumda olan cisimlerin enerjisi. Kinetik + potansiyel enerji.')"
+            onmouseleave="hideTooltip()">
+            <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <div class="energy-name">Mekanik Enerji</div>
+          </button>
+          
+          <button class="energy-button heat" onclick="selectEnergy('Isı')"
+            onmouseenter="showTooltip(this, 'Moleküllerin rastgele hareketinden kaynaklanır. Sıcakk farkı ile yayılır.')"
+            onmouseleave="hideTooltip()">
+            <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 12l1-1 4 4-1 1-3-3 1-1-1-1 1-1 4 4"></path>
+            </svg>
+            <div class="energy-name">Isı Enerjisi</div>
+          </button>
+          
+          <button class="energy-button light" onclick="selectEnergy('Işık')"
+            onmouseenter="showTooltip(this, 'Güneş, ampul gibi kaynaklardan yayılan elektromanyetik enerji.')"
+            onmouseleave="hideTooltip()">
+            <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            <div class="energy-name">Işık Enerjisi</div>
+          </button>
+          
+          <button class="energy-button sound" onclick="selectEnergy('Ses')"
+            onmouseenter="showTooltip(this, 'Madde içindeki moleküllerin titreşmesiyle oluşur. Boşlukta iletilmez.')"
+            onmouseleave="hideTooltip()">
+            <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M9 9a3 3 0 016 0v6a3 3 0 11-6 0V9z"></path>
+            </svg>
+            <div class="energy-name">Ses Enerjisi</div>
+          </button>
+          
+          <button class="energy-button nuclear" onclick="selectEnergy('Nükleer')"
+            onmouseenter="showTooltip(this, 'Atom çekirdeğinde tepkimelerle açığa çıkar. Güneş ve nükleer santrallerde bulunur.')"
+            onmouseleave="hideTooltip()">
+            <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7zM12 2l3 7h7l-7 3-7-3h7l-3-7z"></path>
+            </svg>
+            <div class="energy-name">Nükleer Enerji</div>
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">
+          <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+          </svg>
+          Enerji Zincirin
+        </h3>
+        
+        <div class="score-section">
+          <div class="score-bar">
+            <div class="score">Puan: <span id="score">0</span></div>
+            <button class="reset-button" onclick="resetChain()">Sıfırla</button>
+          </div>
+          <div id="congratulations" class="congratulations" style="display: none;">
+            🎉 Şampiyon! Tebrikler!
+          </div>
+        </div>
+        
+        <div class="chain-area" id="chain">
+          <div class="chain-empty">Başlamak için bir enerji biçimi seç!</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="card-title">
+          <svg class="energy-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          Puan Tablosu
+        </h3>
+        <ul class="reasons-list" id="reasons">
+          <li class="reason-item">Henüz bir zincir oluşturmadın.</li>
+        </ul>
+      </div>
+    </main>
+  </div>
+
+
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <div class="modal" id="guideModal">
+    <div class="modal-content">
+      <h3 class="modal-title">Kullanım Kılavuzu</h3>
+      <ul>
+        <li>Başlamak için bir enerji biçimini seçin.</li>
+        <li>Enerji zincirinizi oluşturmak için, kutulardan uygun bir enerji biçimini seçerek dönüşüm zincirinizi oluşturun.</li>
+        <li>Her <strong>doğrudan dönüşüm</strong> için <strong>+10 puan</strong> alırsınız.</li>
+        <li>Eğer <strong>yanlış bir dönüşüm</strong> seçerseniz <strong>-10 puan</strong> kaybedersiniz ve ekranda nedenini görebilirsiniz.</li>
+        <li>Her seçimden sonra, sağdaki <strong>Puan Tablosu</strong> bölümünde gerekçeleri görebilirsiniz.</li>
+        <li>En az 40 puana ulaşırsanız <strong>Şampiyon</strong> olursunuz ve ekranı konfetiyle doldurursunuz!</li>
+        <li><strong>Sıfırla</strong> butonuyla oyuna baştan başlayabilirsiniz.</li>
+        <li>Bir kutunun üzerine geldiğinizde, o enerji biçiminin tanımı açılır.</li>
+      </ul>
+      <button class="modal-close" onclick="closeGuide()">Kapat</button>
+    </div>
+  </div>
+
+  <script>
+    // Tema Yönetimi
+    function initTheme() {
+      const savedTheme = localStorage.getItem('theme');
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      const theme = savedTheme || systemTheme;
+      
+      document.documentElement.setAttribute('data-theme', theme);
+      updateThemeText(theme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeText(newTheme);
+    }
+
+    function updateThemeText(theme) {
+      const themeIcon = document.querySelector('.theme-icon');
+      
+      if (theme === 'dark') {
+        themeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        `;
+      } else {
+        themeIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+        `;
+      }
+    }
+
+    // Enerji Dönüşüm Haritası
+    const directMap = {
+      "Kimyasal": ["Elektrik", "Isı", "Mekanik"],
+      "Elektrik": ["Isı", "Işık", "Mekanik", "Ses"],
+      "Mekanik": ["Elektrik", "Isı", "Ses"],
+      "Isı": ["Mekanik", "Işık", "Elektrik"],
+      "Işık": ["Isı", "Elektrik", "Kimyasal"],
+      "Ses": ["Elektrik"],
+      "Nükleer": ["Isı", "Elektrik"]
+    };
+
+    const energyIcons = {
+      "Kimyasal": `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>`,
+      "Elektrik": `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>`,
+      "Mekanik": `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>`,
+      "Isı": `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 12l1-1 4 4-1 1-3-3 1-1-1-1 1-1 4 4"></path>`,
+      "Işık": `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>`,
+      "Ses": `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M9 9a3 3 0 016 0v6a3 3 0 11-6 0V9z"></path>`,
+      "Nükleer": `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7zM12 2l3 7h7l-7 3-7-3h7l-3-7z"></path>`
+    };
+
+    const directReasons = {
+      "Kimyasal-Elektrik": "Pil veya aküdeki kimyasal enerji doğrudan elektrik enerjisine dönüşür.",
+      "Kimyasal-Isı": "Odun veya gaz yakıldığında kimyasal enerji doğrudan ısı enerjisine dönüşür.",
+      "Kimyasal-Mekanik": "Motorlarda yakıt yanarak mekanik enerjiye dönüşür.",
+      "Elektrik-Isı": "Elektrikli ısıtıcılarda elektrik enerjisi doğrudan ısıya dönüşür.",
+      "Elektrik-Işık": "Ampulde elektrik enerjisi doğrudan ışığa dönüşür.",
+      "Elektrik-Mekanik": "Elektrik motorunda elektrik doğrudan harekete dönüşür.",
+      "Elektrik-Ses": "Hoparlörde elektrik doğrudan ses dalgasına dönüşür.",
+      "Mekanik-Elektrik": "Dinamo veya jeneratörde mekanik enerji elektrik olur.",
+      "Mekanik-Isı": "Frenlemede hareket doğrudan ısıya dönüşür.",
+      "Mekanik-Ses": "Darbede mekanik enerji doğrudan sese dönüşür.",
+      "Isı-Mekanik": "Buhar türbininde ısı mekanik enerjiye dönüşür.",
+      "Isı-Işık": "Akkor telde ısı doğrudan ışığa dönüşür.",
+      "Isı-Elektrik": "Termokuplda ısı doğrudan elektrik olur.",
+      "Işık-Isı": "Güneş ışığı bir cismi ısıtır.",
+      "Işık-Elektrik": "Güneş panelinde ışık elektrik olur.",
+      "Işık-Kimyasal": "Fotosentezde ışık enerjisi kimyasal enerjiye dönüşür.",
+      "Ses-Elektrik": "Mikrofonda ses dalgaları elektrik sinyaline dönüşür.",
+      "Nükleer-Isı": "Nükleer santralde çekirdek bölünmesiyle ısı oluşur.",
+      "Nükleer-Elektrik": "Termoelektrik jeneratörde nükleer enerji elektrik olur."
+    };
+
+    const indirectReasons = {
+      "Kimyasal": "Kimyasal enerji doğrudan bu enerjiye dönüşemez.",
+      "Elektrik": "Elektrik enerjisi doğrudan bu enerjiye dönüşemez.",
+      "Mekanik": "Mekanik enerji doğrudan bu enerjiye dönüşemez.",
+      "Isı": "Isı enerjisi doğrudan bu enerjiye dönüşemez.",
+      "Işık": "Işık enerjisi doğrudan bu enerjiye dönüşemez.",
+      "Ses": "Ses enerjisi doğrudan bu enerjiye dönüşemez.",
+      "Nükleer": "Nükleer enerji doğrudan bu enerjiye dönüşemez."
+    };
+
+    // Oyun Durumu
+    let chain = [];
+    let score = 0;
+    let reasons = [];
+    let confettiActive = false;
+
+    function selectEnergy(type) {
+      hideTooltip();
+      clearSelectedButton();
+      
+      if (chain.length === 0) {
+        chain = [type];
+        score = 0;
+        reasons = [{
+          text: `Başlangıç enerji biçimi: <strong>${type}</strong> seçildi.`,
+          type: 'correct'
+        }];
+        renderChain();
+        renderReasons();
+        updateScore();
+        selectButton(type);
+        hideCongratulations();
+        return;
+      }
+
+      if (type === chain[chain.length - 1]) {
+        reasons.push({text: "<strong>Aynı enerji biçimi</strong> iki kez üst üste eklenemez.", type: "wrong"});
+        renderReasons();
+        return;
+      }
+
+      const previous = chain[chain.length - 1];
+      const isDirect = directMap[previous] && directMap[previous].includes(type);
+      const key = previous + "-" + type;
+      let text = "";
+
+      if (isDirect) {
+        score += 10;
+        text = `<strong>${previous}</strong> → <strong>${type}</strong>: Doğru! ` + (directReasons[key] || "Bu dönüşüm doğrudan mümkündür.");
+        reasons.push({text: text, type: "correct"});
+      } else {
+        score -= 10;
+        text = `<strong>${previous}</strong> → <strong>${type}</strong>: Yanlış! ` + (indirectReasons[type] || "Bu dönüşüm doğrudan mümkün değildir.");
+        reasons.push({text: text, type: "wrong"});
+      }
+
+      chain.push(type);
+      renderChain();
+      renderReasons();
+      updateScore();
+      selectButton(type);
+
+      if (score >= 40) {
+        showCongratulations();
+        if (!confettiActive) {
+          createConfetti();
+          confettiActive = true;
+        }
+      } else {
+        hideCongratulations();
+      }
+    }
+
+    function renderChain() {
+      const chainElement = document.getElementById('chain');
+      chainElement.innerHTML = '';
+
+      if (chain.length === 0) {
+        chainElement.innerHTML = '<div class="chain-empty">Başlamak için bir enerji biçimi seç!</div>';
+        return;
+      }
+
+      for (let i = 0; i < chain.length; i++) {
+        const type = chain[i];
+        const reason = reasons[i];
+        
+        const item = document.createElement('div');
+        item.className = `chain-item ${reason.type}`;
+        item.innerHTML = `
+          <svg class="chain-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            ${energyIcons[type]}
+          </svg>
+          <div class="chain-name">${type}</div>
+          <div class="chain-score">${i === 0 ? 'Başlangıç' : (reason.type === 'correct' ? '+10' : '-10')}</div>
+        `;
+        chainElement.appendChild(item);
+
+        if (i < chain.length - 1) {
+          const arrow = document.createElement('div');
+          arrow.className = 'chain-arrow';
+          arrow.textContent = '→';
+          chainElement.appendChild(arrow);
+        }
+      }
+    }
+
+    function renderReasons() {
+      const reasonsElement = document.getElementById('reasons');
+      
+      if (reasons.length === 0) {
+        reasonsElement.innerHTML = '<li class="reason-item">Henüz bir zincir oluşturmadın.</li>';
+        return;
+      }
+
+      reasonsElement.innerHTML = reasons.map(reason => 
+        `<li class="reason-item ${reason.type}">${reason.text}</li>`
+      ).join('');
+    }
+
+    function updateScore() {
+      document.getElementById('score').textContent = score;
+    }
+
+    function resetChain() {
+      chain = [];
+      score = 0;
+      reasons = [];
+      confettiActive = false;
+      renderChain();
+      renderReasons();
+      updateScore();
+      clearSelectedButton();
+      hideCongratulations();
+      hideTooltip();
+    }
+
+    function selectButton(type) {
+      const buttons = document.querySelectorAll('.energy-button');
+      buttons.forEach(btn => {
+        const name = btn.querySelector('.energy-name').textContent;
+        // Tam isimden kısa ismi çıkar
+        const shortName = name.replace(' Enerji', '').replace(' Enerjisi', '');
+        if (shortName === type) {
+          btn.classList.add('selected');
+        }
+      });
+    }
+
+    function clearSelectedButton() {
+      const buttons = document.querySelectorAll('.energy-button');
+      buttons.forEach(btn => btn.classList.remove('selected'));
+    }
+
+    function showCongratulations() {
+      document.getElementById('congratulations').style.display = 'block';
+    }
+
+    function hideCongratulations() {
+      document.getElementById('congratulations').style.display = 'none';
+    }
+
+    function createConfetti() {
+      const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316'];
+      
+      for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+          const confetti = document.createElement('div');
+          confetti.className = 'confetti';
+          confetti.style.left = Math.random() * 100 + 'vw';
+          confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.width = Math.random() * 8 + 4 + 'px';
+          confetti.style.height = Math.random() * 8 + 4 + 'px';
+          confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+          confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+          
+          document.body.appendChild(confetti);
+          
+          setTimeout(() => {
+            if (confetti.parentNode) {
+              confetti.parentNode.removeChild(confetti);
+            }
+          }, 3000);
+        }, Math.random() * 2000);
+      }
+    }
+
+    // Tooltip Yönetimi
+    function showTooltip(element, text) {
+      hideTooltip();
+      const tooltip = document.getElementById('tooltip');
+      tooltip.textContent = text;
+      tooltip.classList.add('show');
+
+      const rect = element.getBoundingClientRect();
+      const tooltipRect = tooltip.getBoundingClientRect();
+      
+      let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+      let top = rect.bottom + 10;
+
+      if (left < 10) left = 10;
+      if (left + tooltipRect.width > window.innerWidth - 10) {
+        left = window.innerWidth - tooltipRect.width - 10;
+      }
+
+      if (top + tooltipRect.height > window.innerHeight - 10) {
+        top = rect.top - tooltipRect.height - 10;
+      }
+
+      tooltip.style.left = left + 'px';
+      tooltip.style.top = top + 'px';
+    }
+
+    function hideTooltip() {
+      const tooltip = document.getElementById('tooltip');
+      tooltip.classList.remove('show');
+    }
+
+    // Modal Yönetimi
+    function openGuide() {
+      document.getElementById('guideModal').classList.add('show');
+    }
+
+    function closeGuide() {
+      document.getElementById('guideModal').classList.remove('show');
+    }
+
+    // Event Listeners
+    document.getElementById('guideModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) {
+        closeGuide();
+      }
+    });
+
+    window.addEventListener('scroll', hideTooltip);
+    window.addEventListener('resize', () => {
+      hideTooltip();
+      if (window.innerWidth > 1200) {
+        document.querySelector('.main-grid').style.gridTemplateColumns = '1fr 1.2fr 1fr';
+      }
+    });
+
+    // Başlatma
+    initTheme();
+  </script>
+</body>
+</html>
